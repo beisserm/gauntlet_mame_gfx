@@ -12,8 +12,10 @@ def read_bmp_entire_image(file_path):
         line_colors = [["" for _ in range(64)] for _ in range(470)]
         line_color_counts = [[0 for _ in range(64)] for _ in range(470)]
 
+        width_per_pallete_color = 29 # pixels in bmp
+
         # Iterate through each row of the image
-        for y in range(height):
+        for y in range(0, height, width_per_pallete_color):
             # Read the pixels in the current row
             row = [img.getpixel((x, y)) for x in range(width)]
 
@@ -47,28 +49,28 @@ def read_bmp_entire_image(file_path):
 
         print_16_colors_per_row(line_color_counts, line_colors)
 
-def print_mame_palette_rows(line_color_counts, line_colors):
-    for row in range(len(line_color_counts)):         # Gets the number of rows
+# def print_mame_palette_rows(line_color_counts, line_colors):
+#     for row in range(len(line_color_counts)):         # Gets the number of rows
         
-        next_row = None
-        if row != len(line_color_counts) - 1:
-            next_row = row + 1
+#         next_row = None
+#         if row != len(line_color_counts) - 1:
+#             next_row = row + 1
 
-        if next_row is not None and line_colors[row] == line_colors[next_row]:
-            continue
+#         if next_row is not None and line_colors[row] == line_colors[next_row]:
+#             continue
 
-        result = []
-        for col in range(len(line_color_counts[row])): # Gets the number of columns in the current row                    
-            # Access the element at [row][col]
-            value = line_color_counts[row][col] // 56
-            if value == 0 or value == 64:
-                continue
+#         result = []
+#         for col in range(len(line_color_counts[row])): # Gets the number of columns in the current row                    
+#             # Access the element at [row][col]
+#             value = line_color_counts[row][col] // 56
+#             if value == 0 or value == 64:
+#                 continue
 
-            for i in range(value):
-                result.append(str(line_colors[row][col]).upper())
+#             for i in range(value):
+#                 result.append(str(line_colors[row][col]).upper())
 
-        if len(result) > 0:
-            print(', '.join(result))
+#         if len(result) > 0:
+#             print(', '.join(result))
 
 
 def print_16_colors_per_row(line_color_counts, line_colors):
@@ -81,10 +83,11 @@ def print_16_colors_per_row(line_color_counts, line_colors):
             continue
 
         result = []
-        for col in range(len(line_color_counts[row])):                    
-            value = line_color_counts[row][col] // 56
-            if value == 0 or value == 64:
-                continue
+        for col in range(len(line_color_counts[row])):       
+            # value = line_color_counts[row][col] // 20            
+            value = line_color_counts[row][col] // 56 # Each color has width of 56 pixels
+            # if value == 0 or value == 64:
+            #     continue
 
             # Append the uppercase color the specified number of times
             for i in range(value):
@@ -100,4 +103,4 @@ def print_16_colors_per_row(line_color_counts, line_colors):
             print(', '.join(result))
 
 # Example usage
-read_bmp_entire_image('gauntlet_palette_no_scaling.bmp')        
+read_bmp_entire_image('../gfx/palette/gauntlet_palette_no_scaling.bmp')        
