@@ -1,38 +1,49 @@
-import os
+import datetime
 
-def load_plane(file_path):
-    """Load a plane from the specified file path."""
+def write_bitplanes_to_4bpp(set_paths, output_path, flags):
+    # Open all files for reading
+    set_files = [open(path, 'rb') for path in set_paths]
+
+    # Initialize combined_byte before entering the loop
+    #combined_byte = 0
+
     try:
-        with open(file_path, 'rb') as f:
-            data = f.read()
-            print(f"Loaded {len(data)} bytes from {file_path}")
-            return data
-    except Exception as e:
-        print(f"Error loading file {file_path}: {e}")
-        return None
+        # Open output file for writing
+        with open(output_path, flags) as output_file:
+            while True:
+                # Read one byte from each file in the set
+                set_bytes = [file.read(1) for file in set_files]
 
-def combine_planes(planes):
-    num_planes = len(planes)
-    combined_data = bytearray()
-    num_bytes = len(planes[0])  # Assuming all planes are the same length
+                # If all files return empty bytes, we've finished processing
+                if not any(set_bytes):
+                    break
 
-    for i in range(num_bytes):
-        combined_byte = 0
-        for plane_index in range(num_planes):
-            # Ensure to mask and combine correctly
-            if i < len(planes[plane_index]):
-                value = (planes[plane_index][i] >> 0) & 0x01  # Assuming 1bpp for this plane
-                combined_byte |= (value << plane_index)
+                # # Combine the bytes from the set files
+                # for i, byte in enumerate(set_bytes):
+                #     if byte:  # If byte is not empty
+                #         # Combine bytes correctly based on their positions
+                #         combined_byte |= ord(byte) << (i * 8)  # Shift the byte depending on the position
+                        
+                # # Write the combined byte to the output file
+                # output_file.write(bytes([combined_byte & 0xFF]))  # Write only the least significant byte
+                # combined_byte = 0  # Reset for the next iteration
 
-        if combined_byte < 0 or combined_byte > 255:
-            raise ValueError(f"Byte value out of range: {combined_byte} at index {i}")
-        
-        combined_data.append(combined_byte)
+                # Write the bytes from each file in sequence to the output file
+                #output_file.write(b''.join(set_bytes))
+                for byte in set_bytes:
+                #     inverted_byte = ~byte[0] & 0xFF  # Invert the bits of the byte
+                #     output_file.write(bytes([inverted_byte]))
 
-    return combined_data
+                    #if byte:  # If byte is not empty (i.e., not EOF)
+                    output_file.write(byte)
+
+    finally:
+        # Close all files
+        for file in set_files:
+            file.close()
 
 def main():
-    # Define the paths to the EEPROM files
+    # Define the file paths for the bitplanes (first set)
     first_set_paths = [
         '../rom/gauntlet/136037-111.1a',
         '../rom/gauntlet/136037-112.1b',
@@ -40,6 +51,10 @@ def main():
         '../rom/gauntlet/136037-114.1mn',
     ]
 
+    # Reverse the order of the first set paths
+    #first_set_paths = first_set_paths[::-1]
+
+    # Define the file paths for the bitplanes (second set)
     second_set_paths = [
         '../rom/gauntlet/136037-115.2a',
         '../rom/gauntlet/136037-116.2b',
@@ -47,34 +62,19 @@ def main():
         '../rom/gauntlet/136037-118.2mn',
     ]
 
-    # Load the planes
-    first_set = [load_plane(path) for path in first_set_paths]
-    second_set = [load_plane(path) for path in second_set_paths]
+    #second_set_paths = second_set_paths[::-1]
 
-    combined_first_set = None
-    combined_second_set = None
+    # Generate timestamp in yy-mm-dd-hh-mm format
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H_%M")
 
-    # Combine the planes and handle potential errors
-    try:
-        combined_first_set = combine_planes(first_set)
-        print("Successfully combined first set of planes.")
-    except ValueError as e:
-        print(f"Error during combining first set of planes: {e}")
+    # Define the output file path with the timestamp
+    output_path = f'output_4bpp_inverted_{timestamp}.bin'
 
-    try:
-        combined_second_set = combine_planes(second_set)
-        print("Successfully combined second set of planes.")
-    except ValueError as e:
-        print(f"Error during combining second set of planes: {e}")
+    # Process the first set of files
+    write_bitplanes_to_4bpp(first_set_paths, output_path, 'wb')
 
-    # Save combined data to file if they were successfully combined
-    if combined_first_set is not None:
-        with open('combined_first_set.bin', 'wb') as f:
-            f.write(combined_first_set)
-    
-    if combined_second_set is not None:
-        with open('combined_second_set.bin', 'wb') as f:
-            f.write(combined_second_set)
+    # Process the second set of files and append to the same output file
+    write_bitplanes_to_4bpp(second_set_paths, output_path, 'ab')
 
 if __name__ == "__main__":
     main()

@@ -84,23 +84,23 @@ def print_16_colors_per_row(line_color_counts, line_colors):
 
         result = []
         for col in range(len(line_color_counts[row])):       
-            # value = line_color_counts[row][col] // 20            
-            value = line_color_counts[row][col] // 56 # Each color has width of 56 pixels
-            # if value == 0 or value == 64:
-            #     continue
+          
+            value = line_color_counts[row][col] // 56 # 
+            if value == 0 or value == 64:
+                continue
 
             # Append the uppercase color the specified number of times
             for i in range(value):
                 result.append(str(line_colors[row][col]).upper())
                 
                 # Check if result has reached 16 items
-                if len(result) == 16:
+                if len(result) == 8:
                     print(', '.join(result))  # Print the 16 items
                     result = []  # Reset result to accumulate next batch
 
         # Print any remaining items after the row completes
         if len(result) > 0:
-            print(', '.join(result))
+            print(', '.join(result))  # Print the 16 items
 
 # Example usage
 read_bmp_entire_image('../gfx/palette/gauntlet_palette_no_scaling.bmp')        
