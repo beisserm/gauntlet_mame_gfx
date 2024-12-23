@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import datetime
 
 def write_bitplanes_to_4bpp(set_paths, output_path, flags):

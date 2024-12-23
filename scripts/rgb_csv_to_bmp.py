@@ -1,51 +1,65 @@
+#!/usr/bin/env python3
+
 import csv
 from PIL import Image
 
-# Example: 16x16 image (adjust based on your actual data size)
-# width, height = 16, 36  # You can modify this to match your actual image dimensions
+file_name = "gauntlet_palette_rgb_888_16x32"
+input_csv = f"{file_name}.csv"
+output_file = f"{file_name}.raw"
+output_bmp = f"{file_name}.bmp"
 
-output_file = 'output_palette.raw' 
+def palette_csv_to_pixels():
+    # Read the CSV file
+    with open(f"../gfx/palette/{input_csv}", newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        hex_colors = []
+        for row in reader:
+            for color in row:
+                # Strip spaces, and split by commas if necessary (e.g., "FEFEFE, DCDCDC")
+                cleaned_colors = [c.strip() for c in color.split(',')]  # Split by commas and strip spaces
+                hex_colors.extend(cleaned_colors)
 
-# Read the CSV file
-with open('out_pal.csv', newline='') as csvfile:
-    reader = csv.reader(csvfile)
-    hex_colors = []
-    for row in reader:
-        for color in row:
-            # Strip spaces, and split by commas if necessary (e.g., "FEFEFE, DCDCDC")
-            cleaned_colors = [c.strip() for c in color.split(',')]  # Split by commas and strip spaces
-            hex_colors.extend(cleaned_colors)
+        # for color in hex_colors[:32]:
+        #     print(color)
 
-    for color in hex_colors[:32]:
-        print(color)
+        # Convert hex colors to RGB tuples and populate the image
+        pixels = []
+        for color in hex_colors:
+            r = int(color[0:2], 16)
+            g = int(color[2:4], 16)
+            b = int(color[4:6], 16)
+            pixels.append((r, g, b))
 
-    # # Create a new blank image with RGB mode
-    # image = Image.new('RGB', (width, height))
+        return pixels
 
-    # Convert hex colors to RGB tuples and populate the image
-    pixels = []
-    for color in hex_colors:
-        r = int(color[0:2], 16)
-        g = int(color[2:4], 16)
-        b = int(color[4:6], 16)
-        pixels.append((r, g, b))
+def write_palette_raw(pixels):
+        # Write the pixel data to a raw output file
+        with open(output_file, 'wb') as f:
+            for pixel in pixels:
+                # Write each pixel as 3 bytes (RGB) to the file
+                f.write(bytes(pixel))  # `bytes(pixel)` converts the tuple (r, g, b) into a bytes object
 
-# Write the pixel data to a raw output file
-    with open(output_file, 'wb') as f:
-        for pixel in pixels:
-            # Write each pixel as 3 bytes (RGB) to the file
-            f.write(bytes(pixel))  # `bytes(pixel)` converts the tuple (r, g, b) into a bytes object
+        print(f"Raw palette data written to {output_file} successfully!")
 
-    print(f"Raw image data written to {output_file} successfully!")
+def write_palette_bmp(pixels):
+    width = 16
+    height = 32
 
+    # Create a new image with the given size and mode 'RGB'
+    img = Image.new('RGB', (width, height))
 
-    # for pixel in pixels[:16]:
-    #     print(pixel)
+    # Set the pixels in the image (assuming you want to set them row by row)
+    img.putdata(pixels)
 
-    # # Fill the image with the pixel data
-    # image.putdata(pixels)
+    # Save the image as a BMP
+    img.save(output_bmp)
 
-    # # Save the image as a BMP file
-    # image.save('output_image.bmp')
+    print(f"BMP palette data written to {output_bmp} successfully!")
 
-    # print("BMP image created successfully!")
+def main():
+    pixels = palette_csv_to_pixels()
+    write_palette_raw(pixels)
+    write_palette_bmp(pixels)
+
+if __name__ == "__main__":
+    main()
