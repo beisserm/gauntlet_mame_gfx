@@ -30,7 +30,16 @@ def palette_csv_to_pixels():
             b = int(color[4:6], 16)
             pixels.append((r, g, b))
 
-        return pixels
+        # return pixels
+
+        # Reverse the pixels in groups of 8
+        reversed_pixels = []
+        for i in range(0, len(pixels), 8):
+            chunk = pixels[i:i + 8]  # Take the next 8 pixels
+            reversed_chunk = chunk[::-1]  # Reverse the chunk
+            reversed_pixels.extend(reversed_chunk)  # Add to the new list
+
+        return reversed_pixels
 
 def write_palette_raw(pixels):
         # Write the pixel data to a raw output file
